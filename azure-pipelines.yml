@@ -7,6 +7,8 @@ trigger: none
 
 stages:
   - stage: Build_Bars
+    pool:
+      name: 'My IBM ACE Pool'
     jobs:
       - job: Build_Bars
         workspace:
