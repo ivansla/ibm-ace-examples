@@ -33,6 +33,8 @@ stages:
                 Xvfb :1 > /dev/null 2>&1 &
                 . /home/ivansla/Tools/ace-12.0.8.0/server/bin/mqsiprofile  
                         
+                ls -lah        
+                  
                 mqsicreatebar -data . -b $(Build.ArtifactStagingDirectory)/HelloExample.bar -a HelloExample -p HelloExampleJava HelloExampleJavaUtils -cleanBuild -deployAsSource
           - task: PublishBuildArtifacts@1
             displayName: 'Publish Artifact: bars'
