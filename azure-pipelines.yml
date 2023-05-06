@@ -76,3 +76,22 @@ stages:
                 ibmint deploy --input-bar-file $(Build.Repository.Name)/HelloExampleTest.bar --output-work-directory unit_test_work_dir
 
                 IntegrationServer --work-dir unit_test_work_dir --test-project HelloExampleTest --start-msgflows false
+  - stage: Deploy
+    pool:
+      name: 'My IBM ACE Pool'
+    jobs:
+      - job: Deploy
+        workspace:
+          clean: all
+        steps:
+          - task: DownloadBuildArtifacts@0
+            displayName: 'Download Build Artifacts'
+            inputs:
+              downloadType: specific
+              extractTars: false
+              downloadPath: '$(Build.SourcesDirectory)'
+          - task: Bash@3
+            inputs:
+              targetType: 'inline'
+              script: |
+                echo "Deployment should be straight forward now..."
