@@ -32,12 +32,46 @@ stages:
                 export DISPLAY=:1
                 Xvfb :1 > /dev/null 2>&1 &
                 . /home/ivansla/Tools/ace-12.0.8.0/server/bin/mqsiprofile  
-                        
-                ls -lah        
-                  
+                
+                echo "Packaging Project"        
                 mqsicreatebar -data . -b $(Build.ArtifactStagingDirectory)/HelloExample.bar -a HelloExample -p HelloExampleJava HelloExampleJavaUtils -cleanBuild -deployAsSource
+                
+                echo "Packaging Test Project"
+                mqsicreatebar -data . -b $(Build.ArtifactStagingDirectory)/HelloExample_Test.bar -a HelloExample_Test -p HelloExample HelloExampleJavaUtils -cleanBuild -deployAsSource -compileOnly
           - task: PublishBuildArtifacts@1
             displayName: 'Publish Artifact: bars'
             inputs:
               PathtoPublish: '$(Build.ArtifactStagingDirectory)'
               ArtifactName: '$(Build.Repository.Name)'
+  - stage: Run_Unit_Tests
+    pool:
+      name: 'My IBM ACE Pool'
+    jobs:
+      - job: Run_Unit_Tests
+        workspace:
+          clean: all
+        steps:
+          - task: DownloadBuildArtifacts@0
+            displayName: 'Download Build Artifacts'
+            inputs:
+              downloadType: specific
+              extractTars: false
+              downloadPath: '$(Build.SourcesDirectory)'
+          - task: Bash@3
+            inputs:
+              targetType: 'inline'
+              script: |
+                export DISPLAY=:1
+                Xvfb :1 > /dev/null 2>&1 &
+                . /home/ivansla/Tools/ace-12.0.8.0/server/bin/mqsiprofile
+
+                echo "Creating Integration Server Work dir"
+                mqsicreateworkdir unit_test_work_dir
+
+                echo "Deploying project HelloExample"
+                ibmint deploy --input-bar-file $(Build.Repository.Name)/HelloExample.bar --output-work-directory unit_test_work_dir
+
+                echo "Deploying project HelloExample_Test"
+                ibmint deploy --input-bar-file $(Build.Repository.Name)/HelloExample_Test.bar --output-work-directory unit_test_work_dir
+
+                IntegrationServer --work-dir unit_test_work_dir --test-project HelloExample_Test --start-msgflows false
