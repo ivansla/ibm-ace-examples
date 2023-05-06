@@ -3,7 +3,8 @@
 # Add steps that build, run tests, deploy, and more:
 # https://aka.ms/yaml
 #
-trigger: none
+trigger:
+  - feature/*
 
 stages:
   - stage: Build_Bars
@@ -37,7 +38,7 @@ stages:
                 mqsicreatebar -data . -b $(Build.ArtifactStagingDirectory)/HelloExample.bar -a HelloExample -p HelloExampleJava HelloExampleJavaUtils -cleanBuild -deployAsSource
                 
                 echo "Packaging Test Project"
-                mqsicreatebar -data . -b $(Build.ArtifactStagingDirectory)/HelloExample_Test.bar -a HelloExample_Test -p HelloExample HelloExampleJavaUtils -cleanBuild -deployAsSource -compileOnly
+                mqsicreatebar -data . -b $(Build.ArtifactStagingDirectory)/HelloExampleTest.bar -a HelloExampleTest -p HelloExample HelloExampleJavaUtils -cleanBuild -deployAsSource -compileOnly
           - task: PublishBuildArtifacts@1
             displayName: 'Publish Artifact: bars'
             inputs:
@@ -71,7 +72,7 @@ stages:
                 echo "Deploying project HelloExample"
                 ibmint deploy --input-bar-file $(Build.Repository.Name)/HelloExample.bar --output-work-directory unit_test_work_dir
 
-                echo "Deploying project HelloExample_Test"
-                ibmint deploy --input-bar-file $(Build.Repository.Name)/HelloExample_Test.bar --output-work-directory unit_test_work_dir
+                echo "Deploying project HelloExampleTest"
+                ibmint deploy --input-bar-file $(Build.Repository.Name)/HelloExampleTest.bar --output-work-directory unit_test_work_dir
 
-                IntegrationServer --work-dir unit_test_work_dir --test-project HelloExample_Test --start-msgflows false
+                IntegrationServer --work-dir unit_test_work_dir --test-project HelloExampleTest --start-msgflows false
