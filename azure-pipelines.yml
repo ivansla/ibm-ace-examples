@@ -23,6 +23,7 @@ stages:
                 cd HelloExampleJavaUtils
                 mvn install:install-file -DgroupId=com.ibm.integration.test -DartifactId=integration-test -Dversion=12.0.8.0 -Dpackaging=jar -Dfile=./src/main/resources/IntegrationTest.jar
                 mvn install:install-file -DgroupId=com.ibm.broker.plugin -DartifactId=jplugin2 -Dversion=12.0.8.0 -Dpackaging=jar -Dfile=./src/main/resources/jplugin2.jar
+                cd ..
           - task: Bash@3
             displayName: 'Build project'
             inputs:
@@ -32,7 +33,6 @@ stages:
                 Xvfb :1 > /dev/null 2>&1 &
                 . /home/ivansla/Tools/ace-12.0.8.0/server/bin/mqsiprofile  
                         
-                cd $(Build.Repository.Name)
                 mqsicreatebar -data . -b $(Build.ArtifactStagingDirectory)/HelloExample.bar -a HelloExample -p HelloExampleJava HelloExampleJavaUtils -cleanBuild -deployAsSource
           - task: PublishBuildArtifacts@1
             displayName: 'Publish Artifact: bars'
