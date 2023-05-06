@@ -24,7 +24,7 @@ stages:
                 . /home/ivansla/Tools/ace-12.0.8.0/server/bin/mqsiprofile  
                         
                 cd $(Build.Repository.Name)
-                mqsicreatebar -data . -b $(Build.ArtifactStagingDirectory)/HelloExample.bar -a HelloExample -cleanBuild -deployAsSource
+                mqsicreatebar -data . -b $(Build.ArtifactStagingDirectory)/HelloExample.bar -a HelloExample -p HelloExampleJava -cleanBuild -deployAsSource
           - task: PublishBuildArtifacts@1
             displayName: 'Publish Artifact: bars'
             inputs:
