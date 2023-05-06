@@ -16,13 +16,15 @@ stages:
         steps:
           - checkout: self
           - task: Bash@3
+            displayName: 'Add Libraries to Maven'
             inputs:
               targetType: 'inline'
               script: |
-                cd $(Build.Repository.Name)/HelloExampleJavaUtils
+                cd HelloExampleJavaUtils
                 mvn install:install-file -DgroupId=com.ibm.integration.test -DartifactId=integration-test -Dversion=12.0.8.0 -Dpackaging=jar -Dfile=./src/main/resources/IntegrationTest.jar
                 mvn install:install-file -DgroupId=com.ibm.broker.plugin -DartifactId=jplugin2 -Dversion=12.0.8.0 -Dpackaging=jar -Dfile=./src/main/resources/jplugin2.jar
           - task: Bash@3
+            displayName: 'Build project'
             inputs:
               targetType: 'inline'
               script: |
