@@ -6,6 +6,6 @@
 	<classpathentry kind="var" path="JCN_HOME/jplugin2.jar"/>
 	<classpathentry kind="var" path="COMMON_CLASSES_HOME/IntegrationAPI.jar"/>
 	<classpathentry kind="con" path="com.ibm.etools.mft.uri.classpath.MBProjectReference"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/hello-example-java-utils"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/HelloExampleJavaUtils"/>
 	<classpathentry kind="output" path=""/>
 </classpath>
