@@ -1,0 +1,97 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+#
+trigger:
+  - feature/*
+
+stages:
+  - stage: Build_Bars
+    pool:
+      name: 'My IBM ACE Pool'
+    jobs:
+      - job: Build_Bars
+        workspace:
+          clean: all
+        steps:
+          - checkout: self
+          - task: Bash@3
+            displayName: 'Add Libraries to Maven'
+            inputs:
+              targetType: 'inline'
+              script: |
+                cd HelloExampleJavaUtils
+                mvn install:install-file -DgroupId=com.ibm.integration.test -DartifactId=integration-test -Dversion=12.0.8.0 -Dpackaging=jar -Dfile=./src/main/resources/IntegrationTest.jar
+                mvn install:install-file -DgroupId=com.ibm.broker.plugin -DartifactId=jplugin2 -Dversion=12.0.8.0 -Dpackaging=jar -Dfile=./src/main/resources/jplugin2.jar
+                cd ..
+          - task: Bash@3
+            displayName: 'Build project'
+            inputs:
+              targetType: 'inline'
+              script: |
+                export DISPLAY=:1
+                Xvfb :1 > /dev/null 2>&1 &
+                . /home/ivansla/Tools/ace-12.0.8.0/server/bin/mqsiprofile  
+                
+                echo "Packaging Project"        
+                mqsicreatebar -data . -b $(Build.ArtifactStagingDirectory)/HelloExample.bar -a HelloExample -p HelloExampleJava HelloExampleJavaUtils -cleanBuild -deployAsSource
+                
+                echo "Packaging Test Project"
+                mqsicreatebar -data . -b $(Build.ArtifactStagingDirectory)/HelloExampleTest.bar -a HelloExampleTest -p HelloExample HelloExampleJavaUtils -cleanBuild -deployAsSource -compileOnly
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publish Artifact: bars'
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+              ArtifactName: '$(Build.Repository.Name)'
+  - stage: Run_Unit_Tests
+    pool:
+      name: 'My IBM ACE Pool'
+    jobs:
+      - job: Run_Unit_Tests
+        workspace:
+          clean: all
+        steps:
+          - task: DownloadBuildArtifacts@0
+            displayName: 'Download Build Artifacts'
+            inputs:
+              downloadType: specific
+              extractTars: false
+              downloadPath: '$(Build.SourcesDirectory)'
+          - task: Bash@3
+            inputs:
+              targetType: 'inline'
+              script: |
+                export DISPLAY=:1
+                Xvfb :1 > /dev/null 2>&1 &
+                . /home/ivansla/Tools/ace-12.0.8.0/server/bin/mqsiprofile
+
+                echo "Creating Integration Server Work dir"
+                mqsicreateworkdir unit_test_work_dir
+
+                echo "Deploying project HelloExample"
+                ibmint deploy --input-bar-file $(Build.Repository.Name)/HelloExample.bar --output-work-directory unit_test_work_dir
+
+                echo "Deploying project HelloExampleTest"
+                ibmint deploy --input-bar-file $(Build.Repository.Name)/HelloExampleTest.bar --output-work-directory unit_test_work_dir
+
+                IntegrationServer --work-dir unit_test_work_dir --test-project HelloExampleTest --start-msgflows false
+  - stage: Deploy
+    pool:
+      name: 'My IBM ACE Pool'
+    jobs:
+      - job: Deploy
+        workspace:
+          clean: all
+        steps:
+          - task: DownloadBuildArtifacts@0
+            displayName: 'Download Build Artifacts'
+            inputs:
+              downloadType: specific
+              extractTars: false
+              downloadPath: '$(Build.SourcesDirectory)'
+          - task: Bash@3
+            inputs:
+              targetType: 'inline'
+              script: |
+                echo "Deployment should be straight forward now..."
